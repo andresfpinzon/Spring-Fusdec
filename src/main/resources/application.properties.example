@@ -9,3 +9,5 @@ spring.jpa.hibernate.ddl-auto=update
 JWT_SECRET=
 ROOT_EMAIL=
 ROOT_PASSWORD=
+spring.security.user.name=
+spring.security.user.password=

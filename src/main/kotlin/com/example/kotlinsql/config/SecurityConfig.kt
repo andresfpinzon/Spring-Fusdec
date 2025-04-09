@@ -34,8 +34,12 @@ class SecurityConfig {
                         "/webjars/**"
                     ).permitAll()
                     .requestMatchers("/usuarios/**").hasAnyRole("ADMINISTRATIVO", "ROOT")
-                    .requestMatchers("/roles/**").hasAnyRole("ADMINISTRATIVO", "ROOT")
-                    .requestMatchers("/asistencias/**").hasAnyRole("INSTRUCTOR", "ROOT")
+                    .requestMatchers("/roles/**", "/usuario-roles/**").hasAnyRole("ADMINISTRATIVO", "ROOT")
+                    .requestMatchers("/estudiantes/**").hasAnyRole("SECRETARIO", "ADMINISTRATIVO", "ROOT")
+                    .requestMatchers("/asistencias/**", "/asistencia-estudiantes/**").hasAnyRole("INSTRUCTOR", "ROOT")
+                    .requestMatchers("/calificaciones/**", "/calificacion-estudiantes/**").hasAnyRole("INSTRUCTOR", "ROOT")
+                    .requestMatchers("/certificados/**").hasAnyRole("ADMINISTRATIVO", "ROOT")
+                    .requestMatchers("/auditorias/**").hasAnyRole("ADMINISTRATIVO", "ROOT")
                     .anyRequest().authenticated()
             }
             .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter::class.java)
