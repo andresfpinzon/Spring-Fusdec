@@ -25,9 +25,9 @@ class UsuarioRolService {
         return jdbcTemplate.query(sql, rowMapper)
     }
 
-    fun crear(rol: UsuarioRolCreateRequest): Int {
-        val sql = "INSERT INTO usuario_rol (usuario_numero_documento, rol) VALUES (?, ?)"
-        return jdbcTemplate.update(sql, rol.usuarioNumeroDocumento, rol.rol)
+    fun crear(rol: UsuarioRolCreateRequest): UsuarioRol? {
+        val sql = "INSERT INTO usuario_rol (usuario_numero_documento, rol) VALUES (?, ?) RETURNING *"
+        return jdbcTemplate.queryForObject(sql, rowMapper, rol.usuarioNumeroDocumento, rol.rol)
     }
 
     fun eliminar(usuarioNumeroDocumento: String, rol: String): Int {

@@ -35,19 +35,18 @@ class CalificacionEstudianteController {
             ApiResponse(
                 responseCode = "200",
                 description = "Relación creada exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Relación creada correctamente")])]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = CalificacionEstudiante::class))]
             ),
             ApiResponse(
                 responseCode = "400",
                 description = "Error en los datos enviados",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Datos inválidos")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Datos inválidos")])]
             )
         ]
     )
     @PostMapping
-    fun crear(@Valid @RequestBody request: CalificacionEstudianteCreateRequest): String {
-        val resultado = service.crear(request)
-        return if (resultado > 0) "Relación creada correctamente" else "Error al crear la relación"
+    fun crear(@Valid @RequestBody request: CalificacionEstudianteCreateRequest): CalificacionEstudiante? {
+        return service.crear(request)
     }
 
     @Operation(summary = "Eliminar relación calificación-estudiante", description = "Elimina una relación específica entre una calificación y un estudiante.")
@@ -56,12 +55,12 @@ class CalificacionEstudianteController {
             ApiResponse(
                 responseCode = "200",
                 description = "Relación eliminada exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Relación eliminada")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Relación eliminada")])]
             ),
             ApiResponse(
                 responseCode = "404",
                 description = "Relación no encontrada",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "No se encontró la relación")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "No se encontró la relación")])]
             )
         ]
     )

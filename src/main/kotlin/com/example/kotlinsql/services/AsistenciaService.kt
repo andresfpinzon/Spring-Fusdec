@@ -25,15 +25,16 @@ class AsistenciaService(private val jdbcTemplate: JdbcTemplate) {
         return jdbcTemplate.query("SELECT * FROM asistencia", rowMapper)
     }
 
-    fun crear(request: AsistenciaCreateRequest): Int {
+    fun crear(request: AsistenciaCreateRequest): Asistencia? {
         val sql = """
-            INSERT INTO asistencia (titulo, fecha, usuario_id) 
-            VALUES (?, ?, ?)
-        """.trimIndent()
-        return jdbcTemplate.update(sql, request.titulo, request.fecha, request.usuarioId)
+        INSERT INTO asistencia (titulo, fecha, usuario_id)
+        VALUES (?, ?, ?)
+        RETURNING *
+    """.trimIndent()
+        return jdbcTemplate.queryForObject(sql, rowMapper, request.titulo, request.fecha, request.usuarioId)
     }
 
-    fun actualizar(id: Int, request: AsistenciaUpdateRequest): Int {
+    fun actualizar(id: Int, request: AsistenciaUpdateRequest): Asistencia? {
         val campos = mutableListOf<String>()
         val valores = mutableListOf<Any>()
 
@@ -41,11 +42,15 @@ class AsistenciaService(private val jdbcTemplate: JdbcTemplate) {
         request.fecha?.let { campos.add("fecha = ?"); valores.add(it) }
         request.estado?.let { campos.add("estado = ?"); valores.add(it) }
 
-        if (campos.isEmpty()) return 0
+        if (campos.isEmpty()) return null
 
-        val sql = "UPDATE asistencia SET ${campos.joinToString(", ")} WHERE id = ?"
+        val sqlUpdate = "UPDATE asistencia SET ${campos.joinToString(", ")} WHERE id = ?"
         valores.add(id)
-        return jdbcTemplate.update(sql, *valores.toTypedArray())
+        jdbcTemplate.update(sqlUpdate, *valores.toTypedArray())
+
+        // Devolver la asistencia actualizada
+        val sqlSelect = "SELECT * FROM asistencia WHERE id = ?"
+        return jdbcTemplate.queryForObject(sqlSelect, rowMapper, id)
     }
 
     fun eliminar(id: Int): Int {

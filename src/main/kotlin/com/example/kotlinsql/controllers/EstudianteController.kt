@@ -35,40 +35,50 @@ class EstudianteController {
     @Operation(summary = "Crear estudiante", description = "Crea un nuevo estudiante con los datos proporcionados.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "Estudiante creado exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Estudiante creado correctamente")])]),
-            ApiResponse(responseCode = "400", description = "Datos inválidos",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Error al crear el estudiante")])])
+            ApiResponse(
+                responseCode = "200",
+                description = "Estudiante creado exitosamente",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Estudiante::class))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Datos inválidos",
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Error al crear el estudiante")])]
+            )
         ]
     )
     @PostMapping
-    fun crear(@Valid @RequestBody request: EstudianteCreateRequest): String {
-        val filas = estudianteService.crear(request)
-        return if (filas > 0) "Estudiante creado correctamente" else "Error al crear el estudiante"
+    fun crear(@Valid @RequestBody request: EstudianteCreateRequest): Estudiante? {
+        return estudianteService.crear(request)
     }
 
     @Operation(summary = "Actualizar estudiante", description = "Actualiza los datos de un estudiante.")
     @ApiResponses(
         value = [
-            ApiResponse(responseCode = "200", description = "Estudiante actualizado exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Estudiante actualizado correctamente")])]),
-            ApiResponse(responseCode = "404", description = "Estudiante no encontrado",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "No se realizaron cambios o el estudiante no fue encontrado")])])
+            ApiResponse(
+                responseCode = "200",
+                description = "Estudiante actualizado exitosamente",
+                content = [Content(mediaType = "application/json",  schema = Schema(implementation = Estudiante::class))]
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "Estudiante no encontrado",
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "No se realizaron cambios o el estudiante no fue encontrado")])]
+            )
         ]
     )
     @PutMapping("/{documento}")
-    fun actualizar(@PathVariable documento: String, @Valid @RequestBody request: EstudianteUpdateRequest): String {
-        val filas = estudianteService.actualizar(documento, request)
-        return if (filas > 0) "Estudiante actualizado correctamente" else "No se realizaron cambios o el estudiante no fue encontrado"
+    fun actualizar(@PathVariable documento: String, @Valid @RequestBody request: EstudianteUpdateRequest): Estudiante? {
+        return estudianteService.actualizar(documento, request)
     }
 
     @Operation(summary = "Eliminar estudiante", description = "Elimina un estudiante por su número de documento.")
     @ApiResponses(
         value = [
             ApiResponse(responseCode = "200", description = "Estudiante eliminado",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Estudiante eliminado correctamente")])]),
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Estudiante eliminado correctamente")])]),
             ApiResponse(responseCode = "404", description = "Estudiante no encontrado",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Estudiante no encontrado")])])
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Estudiante no encontrado")])])
         ]
     )
     @DeleteMapping("/{documento}")

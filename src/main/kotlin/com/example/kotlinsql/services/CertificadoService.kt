@@ -32,38 +32,36 @@ class CertificadoService {
         return jdbcTemplate.query(sql, rowMapper)
     }
 
-    fun crear(certificado: CertificadoCreateRequest): Int {
+    fun crear(certificado: CertificadoCreateRequest): Certificado? {
         val sql = """
-        INSERT INTO certificado (fecha_emision, usuario_id, estudiante_id, nombre_emisor, codigo_verificacion, estado)
-        VALUES (?, ?, ?, ?, ?, ?)
-        RETURNING id
-    """.trimIndent()
+            INSERT INTO certificado (fecha_emision, usuario_id, estudiante_id, nombre_emisor, codigo_verificacion, estado)
+            VALUES (?, ?, ?, ?, ?, ?)
+            RETURNING *
+        """.trimIndent()
 
-        val certificadoId = jdbcTemplate.queryForObject(
+        val certificadoCreado = jdbcTemplate.queryForObject(
             sql,
-            arrayOf(
-                certificado.fechaEmision,
-                certificado.usuarioId,
-                certificado.estudianteId,
-                certificado.nombreEmisor,
-                certificado.codigoVerificacion,
-                true
-            ),
-            Int::class.java
-        ) ?: throw Exception("No se pudo crear el certificado")
+            rowMapper,
+            certificado.fechaEmision,
+            certificado.usuarioId,
+            certificado.estudianteId,
+            certificado.nombreEmisor,
+            certificado.codigoVerificacion,
+            true
+        )
 
-        // Crear auditoría automáticamente
-        val auditoriaSql = """
-        INSERT INTO auditoria (fecha, nombre_emisor, certificado_id)
-        VALUES (CURRENT_DATE, ?, ?)
-    """.trimIndent()
+        certificadoCreado?.let {
+            val auditoriaSql = """
+                INSERT INTO auditoria (fecha, nombre_emisor, certificado_id)
+                VALUES (CURRENT_DATE, ?, ?)
+            """.trimIndent()
+            jdbcTemplate.update(auditoriaSql, it.nombreEmisor, it.id)
+        }
 
-        jdbcTemplate.update(auditoriaSql, certificado.nombreEmisor, certificadoId)
-
-        return certificadoId
+        return certificadoCreado
     }
 
-    fun actualizar(id: Int, certificado: CertificadoUpdateRequest): Int {
+    fun actualizar(id: Int, certificado: CertificadoUpdateRequest): Certificado? {
         val campos = mutableListOf<String>()
         val valores = mutableListOf<Any>()
 
@@ -74,15 +72,14 @@ class CertificadoService {
         certificado.codigoVerificacion?.let { campos.add("codigo_verificacion = ?"); valores.add(it) }
         certificado.estado?.let { campos.add("estado = ?"); valores.add(it) }
 
-        if (campos.isEmpty()) return 0
+        if (campos.isEmpty()) return null
 
-        val sql = """
-            UPDATE certificado SET ${campos.joinToString(", ")} WHERE id = ?
-        """.trimIndent()
-
+        val sql = "UPDATE certificado SET ${campos.joinToString(", ")} WHERE id = ?"
         valores.add(id)
+        jdbcTemplate.update(sql, *valores.toTypedArray())
 
-        return jdbcTemplate.update(sql, *valores.toTypedArray())
+        val sqlSelect = "SELECT * FROM certificado WHERE id = ?"
+        return jdbcTemplate.queryForObject(sqlSelect, rowMapper, id)
     }
 
     fun eliminar(id: Int): Int {

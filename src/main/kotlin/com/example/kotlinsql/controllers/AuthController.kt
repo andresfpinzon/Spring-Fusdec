@@ -75,7 +75,6 @@ class AuthController(
             "ROLE_${rol.uppercase()}"
         }
 
-
         val token = jwtUtil.generateToken(usuario["numero_documento"].toString(), roles)
         return ResponseEntity.ok(LoginResponse(token))
     }

@@ -1,6 +1,5 @@
 package com.example.kotlinsql.controllers
 
-import jakarta.validation.ConstraintViolationException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -24,7 +23,6 @@ class GlobalExceptionHandler {
         )
     }
 
-    // Errores de validaciones manuales, como el correo repetido
     @ExceptionHandler(IllegalArgumentException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleIllegalArgument(ex: IllegalArgumentException): Map<String, String> {

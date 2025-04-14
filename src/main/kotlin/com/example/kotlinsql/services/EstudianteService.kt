@@ -29,15 +29,17 @@ class EstudianteService(private val jdbcTemplate: JdbcTemplate) {
         return jdbcTemplate.query(sql, rowMapper)
     }
 
-    fun crear(request: EstudianteCreateRequest): Int {
+    fun crear(request: EstudianteCreateRequest): Estudiante? {
         val sql = """
             INSERT INTO estudiante (
                 numero_documento, nombre, apellido, tipo_documento,
                 genero, unidad, colegio, grado
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING *
         """.trimIndent()
-        return jdbcTemplate.update(
+        return jdbcTemplate.queryForObject(
             sql,
+            rowMapper,
             request.numeroDocumento,
             request.nombre,
             request.apellido,
@@ -49,7 +51,7 @@ class EstudianteService(private val jdbcTemplate: JdbcTemplate) {
         )
     }
 
-    fun actualizar(documento: String, request: EstudianteUpdateRequest): Int {
+    fun actualizar(documento: String, request: EstudianteUpdateRequest): Estudiante? {
         val campos = mutableListOf<String>()
         val valores = mutableListOf<Any>()
 
@@ -62,11 +64,14 @@ class EstudianteService(private val jdbcTemplate: JdbcTemplate) {
         request.grado?.let { campos.add("grado = ?"); valores.add(it) }
         request.estado?.let { campos.add("estado = ?"); valores.add(it) }
 
-        if (campos.isEmpty()) return 0
+        if (campos.isEmpty()) return null
 
         val sql = "UPDATE estudiante SET ${campos.joinToString(", ")} WHERE numero_documento = ?"
         valores.add(documento)
-        return jdbcTemplate.update(sql, *valores.toTypedArray())
+        jdbcTemplate.update(sql, *valores.toTypedArray())
+
+        val sqlSelect = "SELECT * FROM estudiante WHERE numero_documento = ?"
+        return jdbcTemplate.queryForObject(sqlSelect, rowMapper, documento)
     }
 
     fun eliminar(documento: String): Int {

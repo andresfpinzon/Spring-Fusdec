@@ -31,13 +31,14 @@ class CalificacionService {
         return jdbcTemplate.query("SELECT * FROM calificacion", rowMapper)
     }
 
-    fun crear(request: CalificacionCreateRequest): Int {
+    fun crear(request: CalificacionCreateRequest): Calificacion? {
         val sql = """
             INSERT INTO calificacion (titulo, aprobado, usuario_id, edicion, unidad)
             VALUES (?, ?, ?, ?, ?)
+            RETURNING *
         """.trimIndent()
 
-        return jdbcTemplate.update(sql,
+        return jdbcTemplate.queryForObject(sql, rowMapper,
             request.titulo,
             request.aprobado,
             request.usuarioId,
@@ -46,41 +47,26 @@ class CalificacionService {
         )
     }
 
-    fun actualizar(id: Int, request: CalificacionUpdateRequest): Int {
+    fun actualizar(id: Int, request: CalificacionUpdateRequest): Calificacion? {
         val campos = mutableListOf<String>()
         val valores = mutableListOf<Any>()
 
-        request.titulo?.let {
-            campos.add("titulo = ?")
-            valores.add(it)
-        }
-        request.aprobado?.let {
-            campos.add("aprobado = ?")
-            valores.add(it)
-        }
-        request.usuarioId?.let {
-            campos.add("usuario_id = ?")
-            valores.add(it)
-        }
-        request.estado?.let {
-            campos.add("estado = ?")
-            valores.add(it)
-        }
-        request.edicion?.let {
-            campos.add("edicion = ?")
-            valores.add(it)
-        }
-        request.unidad?.let {
-            campos.add("unidad = ?")
-            valores.add(it)
-        }
+        request.titulo?.let { campos.add("titulo = ?"); valores.add(it) }
+        request.aprobado?.let { campos.add("aprobado = ?"); valores.add(it) }
+        request.usuarioId?.let { campos.add("usuario_id = ?"); valores.add(it) }
+        request.estado?.let { campos.add("estado = ?"); valores.add(it) }
+        request.edicion?.let { campos.add("edicion = ?"); valores.add(it) }
+        request.unidad?.let { campos.add("unidad = ?"); valores.add(it) }
 
-        if (campos.isEmpty()) return 0
+        if (campos.isEmpty()) return null
 
         val sql = "UPDATE calificacion SET ${campos.joinToString(", ")} WHERE id = ?"
         valores.add(id)
+        jdbcTemplate.update(sql, *valores.toTypedArray())
 
-        return jdbcTemplate.update(sql, *valores.toTypedArray())
+        val sqlSelect = "SELECT * FROM calificacion WHERE id = ?"
+
+        return jdbcTemplate.queryForObject(sqlSelect, rowMapper, id)
     }
 
     fun eliminar(id: Int): Int {

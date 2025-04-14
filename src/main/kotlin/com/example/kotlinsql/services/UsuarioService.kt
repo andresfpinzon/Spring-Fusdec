@@ -36,26 +36,34 @@ class UsuarioService {
         return jdbcTemplate.query(sql, rowMapper)
     }
 
-    fun crear(usuario: UsuarioCreateRequest): Int {
+    fun crear(usuario: UsuarioCreateRequest): Usuario? {
         val existeCorreo = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM usuario WHERE correo = ?",
             Int::class.java,
             usuario.correo
         ) ?: 0
 
-        if (existeCorreo > 0) {
-            throw IllegalArgumentException("El correo ya está registrado")
+        val existeDocumento = jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM usuario WHERE numero_documento = ?",
+            Int::class.java,
+            usuario.numeroDocumento
+        ) ?: 0
+
+        if (existeCorreo > 0 || existeDocumento > 0) {
+            throw IllegalArgumentException("El correo o documento ya está registrado")
         }
 
         val sql = """
         INSERT INTO usuario (numero_documento, nombre, apellido, correo, password, estado) 
         VALUES (?, ?, ?, ?, ?, ?)
+        RETURNING *
     """.trimIndent()
 
         val encryptedPassword = passwordEncoder.encode(usuario.password)
 
-        return jdbcTemplate.update(
+        return jdbcTemplate.queryForObject(
             sql,
+            rowMapper,
             usuario.numeroDocumento,
             usuario.nombre,
             usuario.apellido,
@@ -65,7 +73,7 @@ class UsuarioService {
         )
     }
 
-    fun actualizar(numeroDocumento: String, usuario: UsuarioUpdateRequest): Int {
+    fun actualizar(documento: String, usuario: UsuarioUpdateRequest): Usuario? {
         val campos = mutableListOf<String>()
         val valores = mutableListOf<Any>()
 
@@ -75,7 +83,7 @@ class UsuarioService {
         usuario.password?.let { campos.add("password = ?");valores.add(passwordEncoder.encode(it)) }
         usuario.estado?.let { campos.add("estado = ?");valores.add(it) }
 
-        if (campos.isEmpty()) return 0
+        if (campos.isEmpty()) return null
 
         campos.add("updated_at = CURRENT_TIMESTAMP")
 
@@ -85,11 +93,13 @@ class UsuarioService {
         WHERE numero_documento = ?
     """.trimIndent()
 
-        valores.add(numeroDocumento)
+        valores.add(documento)
+        jdbcTemplate.update(sql, *valores.toTypedArray())
 
-        return jdbcTemplate.update(sql, *valores.toTypedArray())
+        val sqlSelect = "SELECT * FROM usuario WHERE numero_documento = ?"
+        return jdbcTemplate.queryForObject(sqlSelect, rowMapper, documento)
+
     }
-
 
     fun eliminarPorDocumento(documento: String): Int {
         val sql = "DELETE FROM usuario WHERE numero_documento = ?"

@@ -40,7 +40,7 @@ class AsistenciaController {
             ApiResponse(
                 responseCode = "200",
                 description = "Asistencia creada exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Asistencia creada correctamente")])]
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Asistencia::class))]
             ),
             ApiResponse(
                 responseCode = "400",
@@ -50,9 +50,8 @@ class AsistenciaController {
         ]
     )
     @PostMapping
-    fun crear(@Valid @RequestBody asistencia: AsistenciaCreateRequest): String {
-        val resultado = asistenciaService.crear(asistencia)
-        return if (resultado > 0) "Asistencia creada correctamente" else "Error al crear la asistencia"
+    fun crear(@Valid @RequestBody asistencia: AsistenciaCreateRequest): Asistencia? {
+        return asistenciaService.crear(asistencia)
     }
 
     @Operation(summary = "Actualizar asistencia", description = "Actualiza una asistencia existente mediante su ID.")
@@ -60,8 +59,8 @@ class AsistenciaController {
         value = [
             ApiResponse(
                 responseCode = "200",
-                description = "Asistencia actualizada exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Asistencia actualizada correctamente")])]
+                description = "Asistencia creada exitosamente",
+                content = [Content(mediaType = "application/json", schema = Schema(implementation = Asistencia::class))]
             ),
             ApiResponse(
                 responseCode = "404",
@@ -71,9 +70,8 @@ class AsistenciaController {
         ]
     )
     @PutMapping("/{id}")
-    fun actualizar(@PathVariable id: Int, @Valid @RequestBody asistencia: AsistenciaUpdateRequest): String {
-        val resultado = asistenciaService.actualizar(id, asistencia)
-        return if (resultado > 0) "Asistencia actualizada correctamente" else "No se realizaron cambios o la asistencia no fue encontrada"
+    fun actualizar(@PathVariable id: Int, @Valid @RequestBody asistencia: AsistenciaUpdateRequest): Asistencia? {
+        return asistenciaService.actualizar(id, asistencia)
     }
 
     @Operation(summary = "Eliminar asistencia", description = "Elimina una asistencia mediante su ID.")

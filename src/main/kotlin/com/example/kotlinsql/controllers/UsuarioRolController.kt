@@ -27,9 +27,8 @@ class UsuarioRolController {
         content = [Content(mediaType = "application/json", schema = Schema(implementation = UsuarioRol::class))]
     )
     @GetMapping
-    fun obtenerTodos(): List<UsuarioRol> {
-        return usuarioRolService.obtenerTodos()
-    }
+    fun obtenerTodos(): List<UsuarioRol> =  usuarioRolService.obtenerTodos()
+
 
     @Operation(summary = "Obtener roles por número de documento", description = "Devuelve los roles asociados a un usuario específico.")
     @ApiResponses(
@@ -52,19 +51,18 @@ class UsuarioRolController {
             ApiResponse(
                 responseCode = "200",
                 description = "Rol asignado correctamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Rol asignado correctamente")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Rol asignado correctamente")])]
             ),
             ApiResponse(
                 responseCode = "400",
                 description = "Datos inválidos",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "No se pudo asignar el rol")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "No se pudo asignar el rol")])]
             )
         ]
     )
     @PostMapping
-    fun crear(@Valid @RequestBody rolRequest: UsuarioRolCreateRequest): String {
-        val resultado = usuarioRolService.crear(rolRequest)
-        return if (resultado > 0) "Rol asignado correctamente" else "No se pudo asignar el rol"
+    fun crear(@Valid @RequestBody request: UsuarioRolCreateRequest): UsuarioRol? {
+        return usuarioRolService.crear(request)
     }
 
     @Operation(summary = "Eliminar rol de usuario", description = "Elimina un rol específico de un usuario.")
@@ -73,17 +71,19 @@ class UsuarioRolController {
             ApiResponse(
                 responseCode = "200",
                 description = "Rol eliminado correctamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Rol eliminado correctamente")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Rol eliminado correctamente")])]
             ),
             ApiResponse(
                 responseCode = "404",
                 description = "Rol no encontrado",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "No se encontró el rol para eliminar")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "No se encontró el rol para eliminar")])]
             )
         ]
     )
     @DeleteMapping("/{documento}/{rol}")
-    fun eliminar(@PathVariable documento: String, @PathVariable rol: String): String {
+    fun eliminar(
+        @PathVariable documento: String,
+        @PathVariable rol: String): String {
         val resultado = usuarioRolService.eliminar(documento, rol)
         return if (resultado > 0) "Rol eliminado correctamente" else "No se encontró el rol para eliminar"
     }

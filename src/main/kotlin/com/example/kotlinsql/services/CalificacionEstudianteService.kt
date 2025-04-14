@@ -25,12 +25,13 @@ class CalificacionEstudianteService {
         return jdbcTemplate.query(sql, rowMapper)
     }
 
-    fun crear(request: CalificacionEstudianteCreateRequest): Int {
+    fun crear(request: CalificacionEstudianteCreateRequest): CalificacionEstudiante? {
         val sql = """
             INSERT INTO calificacion_estudiante (calificacion_id, estudiante_id)
             VALUES (?, ?)
+            RETURNING *
         """.trimIndent()
-        return jdbcTemplate.update(sql, request.calificacionId, request.estudianteId)
+        return jdbcTemplate.queryForObject(sql, rowMapper, request.calificacionId, request.estudianteId)
     }
 
     fun eliminar(calificacionId: Int, estudianteId: String): Int {

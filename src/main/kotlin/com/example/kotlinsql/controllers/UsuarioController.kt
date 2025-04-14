@@ -14,11 +14,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 
-
-
 @RestController
-
-
 class UsuarioController {
 
     @Autowired
@@ -50,19 +46,18 @@ class UsuarioController {
             ApiResponse(
                 responseCode = "200",
                 description = "Usuario creado exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Usuario creado correctamente")])]
+                content = [Content(mediaType = "application/json",  schema = Schema(implementation = Usuario::class))]
             ),
             ApiResponse(
                 responseCode = "400",
                 description = "Error en los datos enviados",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Error al crear el usuario")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Error al crear el usuario")])]
             )
         ]
     )
     @PostMapping
-    fun crearUsuario(@Valid @RequestBody usuario: UsuarioCreateRequest): String {
-        val resultado = usuarioService.crear(usuario)
-        return if (resultado > 0) "Usuario creado correctamente" else "Error al crear el usuario"
+    fun crearUsuario(@Valid @RequestBody usuario: UsuarioCreateRequest): Usuario? {
+        return usuarioService.crear(usuario)
     }
 
 
@@ -76,12 +71,12 @@ class UsuarioController {
             ApiResponse(
                 responseCode = "200",
                 description = "Usuario actualizado exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Usuario actualizado correctamente")])]
+                content = [Content(mediaType = "application/json",  schema = Schema(implementation = Usuario::class))]
             ),
             ApiResponse(
                 responseCode = "404",
                 description = "Usuario no encontrado o sin cambios",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "No se realizaron cambios o el usuario no fue encontrado")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "No se realizaron cambios o el usuario no fue encontrado")])]
             )
         ]
     )
@@ -89,12 +84,8 @@ class UsuarioController {
     fun actualizarUsuario(
         @PathVariable documento: String,
         @Valid @RequestBody usuario: UsuarioUpdateRequest
-    ): String {
-        val filasAfectadas = usuarioService.actualizar(documento, usuario)
-        return if (filasAfectadas > 0)
-            "Usuario actualizado correctamente"
-        else
-            "No se realizaron cambios o el usuario no fue encontrado"
+    ): Usuario? {
+        return usuarioService.actualizar(documento, usuario)
     }
 
     @Operation(
@@ -106,12 +97,12 @@ class UsuarioController {
             ApiResponse(
                 responseCode = "200",
                 description = "Usuario eliminado exitosamente",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Usuario eliminado")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Usuario eliminado")])]
             ),
             ApiResponse(
                 responseCode = "404",
                 description = "Usuario no encontrado",
-                content = [Content(mediaType = "text/plain", examples = [ExampleObject(value = "Usuario no encontrado")])]
+                content = [Content(mediaType = "application/json", examples = [ExampleObject(value = "Usuario no encontrado")])]
             )
         ]
     )
